@@ -26,11 +26,11 @@ type dbConnection struct {
 }
 type Schedule struct {
   Model
-  Name string 
-  Type_name string
-  Start_date time.Time
-  Interval_in_days uint
-  Frequency uint
+  name string 
+  type_name string
+  start_date time.Time
+  interval_in_days uint
+  frequency uint
 }
 type ScheduleDaily struct { Model
   ScheduleID uint `gorm:"references:Schedule"`
@@ -93,12 +93,11 @@ func deleteSchedule(ScheduleId uint)(err error){
 }
 
 // add new schedule
-func addSchedule(time_of_day time.Time,start_date time.Time,end_date time.Time) (err error) {
+func addSchedule(schedule *[]Schedule) (err error) {
   db,err := connectToDataBase()
   if err != nil{
     return err
   }
-  schedule := ScheduleDaily{Time_of_day:time_of_day,Start_date:start_date,end_date:end_date}
   result := db.Create(&schedule)
   if result.Error != nil{
     return result.Error
@@ -106,7 +105,7 @@ func addSchedule(time_of_day time.Time,start_date time.Time,end_date time.Time) 
   return nil 
 }
 // update schedule
-func updateSchedule(schedule_id uint,time_of_day time.Time,start_date time.Time,end_date time.Time) (err error) {
+func updateSchedule(schedule_id uint,Name string,Type_name string,Start_date time.Time,Interval_in_days uint,Frequency uint) (err error) {
   db,err := connectToDataBase()
   if err != nil{
     return err

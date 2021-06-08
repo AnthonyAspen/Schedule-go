@@ -17,6 +17,7 @@ func NewHandler(l *log.Logger) *Handler{
   return &Handler{l}
 }
 
+    // GET METHOD handler
 func getAllSchedulesHandler(w http.ResponseWriter, r *http.Request){
   lp,err := getSchedules()
   if err != nil{
@@ -28,15 +29,67 @@ func getAllSchedulesHandler(w http.ResponseWriter, r *http.Request){
   }
   w.WriteHeader(http.StatusOK)
   w.Write(lp_json)
+  return
 }  
+    // DELETE METHOD handler
 func deleteScheduleByIdHandler(scheduleId uint,w http.ResponseWriter, r *http.Request){
+
      err := deleteSchedule(scheduleId)
      if err != nil{
         http.Error(w,"failed to delete an Order Info by Id",http.StatusInternalServerError)
      }
      w.WriteHeader(http.StatusOK)
+     return
 
    }
+
+   // PUT method handler
+func  putScheduleHandler(w http.ResponseWriter, r *http.Request){
+     // read body
+     var body []byte
+     _,err := r.Body.Read(body)
+     if err != nil{
+     http.Error(w,"failed read body",http.StatusInternalServerError)
+     }
+
+     // unmarshal body
+     var schedule Schedule
+     err = json.Unmarshal(body,&schedule)
+     if err != nil{
+     http.Error(w,"failed to unmarshal body",http.StatusInternalServerError)
+     }
+     // call func to update the schedule
+     // TODO
+    // err = updateSchedule()
+    //  if err != nil{
+    //    http.Error(w,"failed to change schedule",http.StatusInternalServerError)
+    //  }
+    return
+
+   }
+   // POST method handler
+   func postScheduleHandler(w http.ResponseWriter, r *http.Request){
+     // body,err := ioutil.ReadAll(r.Body)
+     // if err != nil{
+     // http.Error(w,"failed read body",http.StatusInternalServerError)
+     // }
+
+     // // unmarshal body
+      var schedule []Schedule
+     // err = json.Unmarshal(body,&schedule)
+     // if err != nil{
+     // http.Error(w,"failed to unmarshal body",http.StatusInternalServerError)
+     // }
+     decoder := json.NewDecoder(r.Body)
+     err := decoder.Decode(&schedule)
+     if err != nil{
+     http.Error(w,"failed to unmarshal body",http.StatusInternalServerError)
+     log.Println(err)
+     }
+     addSchedule(&schedule)
+     return
+   }
+
 
 // this is a main handler, it will give other handlers depend of a method(request)
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request){
@@ -48,13 +101,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request){
     // if url doesn't contain any id then get every order
     getAllSchedulesHandler(w,r)
     }
-    return
   }
   if r.Method == http.MethodPost{
-    return
+    postScheduleHandler(w,r)
   }
-  if r.Method == http.MethodPost{
-    return
+  if r.Method == http.MethodPut{
+    putScheduleHandler(w,r)
   }
   if r.Method == http.MethodDelete{
     if url == "/"{
@@ -69,10 +121,10 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request){
         http.Error(w,"failed to convert URL Path in uint",http.StatusInternalServerError)
       }
       deleteScheduleByIdHandler(uint(orderIdConv),w,r)
-    return
 
   }
  }
+ return 
 }
 
 // func putNewOrderHandler(orderId uint,productId uint,w http.ResponseWriter, r *http.Request){
